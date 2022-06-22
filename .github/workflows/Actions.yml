@@ -1,41 +1,42 @@
-name: ENV Variables
-on: push
-env: 
-WF_ENV: Available to all jobs
+name: Actions Workflow
+
+on: 
+  push:
+    branches:
+      - master
+      - 'feature/*'
+      - 'feature/**'
+      - '!feature/featC'
+    tags:
+      - v1.*
+    paths:
+      -'**.js'    
 
 jobs:  
-  log-env:
+  run-github-actions:
     runs-on: ubuntu-latest
-    env:
-      JOB_ENV: Available to all steps in log-env job
-    steps:  
-      - name: Log ENV Variables
-        env:
-          STEP_ENV: Available to only this step
-        run: |
-          echo "WF_ENV: ${WF_ENV}"
-          echo "JOB_ENV: ${JOB_ENV}"
-          echo "STEP_ENV: ${STEP_ENV}"
-      - name: Log ENV 2
-        run:
-          echo "WF_ENV: ${WF_ENV}"
-          echo "JOB_ENV: ${JOB_ENV}"
-          echo "STEP_ENV: ${STEP_ENV}" 
-  log-default-env:
-    run-on: ubuntu-latest
     steps:
-      - name: Default ENV Variables
+      - name: payload
+        run: echo ${{github.event.client_payload.env}}
+      - name: List Files
         run: |
-          echo "HOME: ${HOME}"
-          echo "GITHUB_WORKFLOW: ${GITHUB_WORKFLOW}"
-          echo "GITHUB_ACTION: ${GITHUB_ACTION}"
-          echo "GITHUB_ACTIONS: ${GITHUB_ACTIONS}"
-          echo "GITHUB_ACTOR: ${GITHUB_ACTOR}"
-          echo "GITHUB_REPOSITORY: ${GITHUB_REPOSITORY}"
-          echo "GITHUB_EVENT_NAME: ${GITHUB_EVENT_NAME}"
-          echo "GITHUB_WORKSPACE: ${GITHUB_WORKSPACE}"
-          echo "GITHUB_SHA: ${GITHUB_SHA}"
-          echo "WF_ENV: ${WF_ENV}"
-          echo "JOB_ENV: ${JOB_ENV}"
-          echo "STEP_ENV: ${STEP_ENV}"
-
+          pwd
+          ls -a
+          echo $GITHUB_SHA
+          echo $GITHUB_REPOSITORY
+          echo $GITHUB_WORKSPACE
+          echo "${{github.token}}"
+         
+      - name: Checkout   
+        uses: actions/checkout@v1
+      - name: List Files
+        run: |
+          pwd
+          ls -a
+      - name: Simple JS Actions
+        id: greet
+        uses: actions/hello-world-javascript-action@v1
+        with:
+          who-to-greet: Sai
+      - name: Log Greeting Time
+        run: echo "${{steps.greet.outputs.time}}"    
